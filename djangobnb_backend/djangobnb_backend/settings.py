@@ -28,10 +28,14 @@ AUTH_USER_MODEL = 'useraccount.User'
 
 SITE_ID = 1
 
+CHANNEL_LAYERS = {
+    'default':{
+        'BACKEND':'channels.layers.InMemoryChannelLayer'
+    }
+}
+
 if DEBUG:
     WEBSITE_URL = 'http://localhost:8000'
-else:
-    WEBSITE_URL = 'http://64.226.81.32:1337'
 
 
 SIMPLE_JWT = {
@@ -90,6 +94,7 @@ REST_AUTH = {
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -144,7 +149,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'djangobnb_backend.wsgi.application'
-
+ASGI_APPLICATION = 'djangobnb_backend.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
