@@ -1,7 +1,13 @@
 from rest_framework import serializers
 
-from .models import Property, Reservation
+from .models import Property, Reservation, Category
 from useraccount.serializers import UserDetailSerializer
+
+
+class CategorySerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Category
+    fields = ['id','name','slug','image_url']
 
 
 class PropertiesListSerializer(serializers.ModelSerializer):

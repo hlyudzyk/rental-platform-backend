@@ -1,12 +1,13 @@
+from django.forms import forms
 from django.http import JsonResponse
 
 from rest_framework.decorators import (api_view, authentication_classes,
                                        permission_classes)
 from rest_framework_simplejwt.tokens import AccessToken
 from .forms import PropertyForm
-from .models import Property, Reservation
+from .models import Property, Reservation, Category
 from .serializers import PropertiesListSerializer, PropertyDetailSerializer, \
-  ReservationsListSerializer
+  ReservationsListSerializer, CategorySerializer
 from useraccount.models import User
 
 @api_view(['GET'])
@@ -66,13 +67,7 @@ def properties_list(request):
     properties = properties.filter(country=country)
 
   if category and category != 'undefined':
-    properties = properties.filter(category=category)
-
-
-
-
-
-
+    properties = properties.filter(category__slug=category)
   if user:
     for property in properties:
       if user in property.favorited.all():
@@ -84,6 +79,14 @@ def properties_list(request):
     'favorites':favorited
   })
 
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def categories_list(request):
+  categories = Category.objects.all()
+  serializer = CategorySerializer(categories,many=True)
+
+  return JsonResponse(serializer.data,safe=False)
 
 @api_view(['GET'])
 @authentication_classes([])
