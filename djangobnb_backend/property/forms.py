@@ -1,6 +1,7 @@
+from django.contrib.auth import forms
 from django.forms import ModelForm
 
-from .models import Property
+from .models import Property, Category
 
 
 class PropertyForm(ModelForm):
