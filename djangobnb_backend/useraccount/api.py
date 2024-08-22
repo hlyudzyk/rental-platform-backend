@@ -1,3 +1,4 @@
+from .forms import EditUserAccountForm
 from .serializers import UserDetailSerializer
 from .models import User
 from django.http import JsonResponse
@@ -17,3 +18,16 @@ def reservations_list(request):
   reservations = request.user.reservations.all()
   serializer = ReservationsListSerializer(reservations,many=True)
   return JsonResponse(serializer.data,safe=False)
+
+@api_view(['POST','FILES'])
+def edit_account(request):
+  form = EditUserAccountForm(request.POST, request.FILES)
+
+  if form.is_valid():
+    user = form.save(commit=True)
+    serializer = UserDetailSerializer(user,many=False)
+    return JsonResponse(serializer.data,safe=False)
+
+
+  return JsonResponse({"errors": form.errors.as_json()}, status=400)
+
