@@ -24,7 +24,19 @@ def edit_account(request):
   form = EditUserAccountForm(request.POST, request.FILES)
 
   if form.is_valid():
-    user = form.save(commit=True)
+    cd = form.cleaned_data
+    user = User.objects.get(pk=request.user.id)
+
+    name = cd['name']
+    description = cd['description']
+    avatar = cd['avatar']
+
+    if(name): user.name = name
+    if(description): user.description = description
+    if(avatar): user.avatar = avatar
+
+    user.save()
+
     serializer = UserDetailSerializer(user,many=False)
     return JsonResponse(serializer.data,safe=False)
 
