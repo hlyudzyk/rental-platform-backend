@@ -1,3 +1,6 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+
 from .forms import EditUserAccountForm
 from .serializers import UserDetailSerializer
 from .models import User
@@ -31,9 +34,14 @@ def edit_account(request):
     description = cd['description']
     avatar = cd['avatar']
 
-    if(name): user.name = name
-    if(description): user.description = description
-    if(avatar): user.avatar = avatar
+    if name:
+      user.name = name
+
+    if description:
+      user.description = description
+
+    if avatar:
+      user.avatar = avatar
 
     user.save()
 

@@ -6,6 +6,7 @@ from django.template.defaultfilters import slugify
 
 from useraccount.models import User
 
+
 class Category(models.Model):
   id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
   name = models.CharField(max_length=100)
@@ -23,6 +24,7 @@ class Category(models.Model):
     if not self.slug:
       self.slug = slugify(self.name)
     super().save(*args, **kwargs)
+
 
 class Property(models.Model):
   id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
