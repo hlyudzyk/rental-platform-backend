@@ -1,83 +1,53 @@
+from django.db.models import Q
 from django.forms import forms
 from django.http import JsonResponse
 
 from rest_framework.decorators import (api_view, authentication_classes,
                                        permission_classes)
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import AccessToken
 from .forms import PropertyForm
 from .models import Property, Reservation, Category
 from .serializers import PropertiesListSerializer, PropertyDetailSerializer, \
   ReservationsListSerializer, CategorySerializer
 from useraccount.models import User
+from .filters import PropertyFilter
+
+def get_authenticated_user(request):
+  try:
+    token = request.META.get('HTTP_AUTHORIZATION', '').split('Bearer ')[1]
+    token = AccessToken(token)
+    user_id = token.payload.get('user_id')
+    return User.objects.get(pk=user_id)
+  except (IndexError, KeyError, User.DoesNotExist, AuthenticationFailed):
+    return None
+
+
+def get_favorited_properties(properties, user):
+  if not user:
+    return []
+  return [property.id for property in properties if user in property.favorited.all()]
+
+
 
 @api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
 def properties_list(request):
-  try:
-    token = request.META['HTTP_AUTHORIZATION'].split('Bearer ')[1]
-    token = AccessToken(token)
-    user_id = token.payload['user_id']
-    user = User.objects.get(pk=user_id)
-
-  except Exception as e:
-    user = None
-
+  user = get_authenticated_user(request)
   properties = Property.objects.all()
-  favorited = []
 
-  is_favorites = request.GET.get('is_favorites','')
-  host_id = request.GET.get('host_id','')
-  country = request.GET.get('country','')
-  category = request.GET.get('category','')
-  checkin_date = request.GET.get('checkin_date','')
-  checkout_date = request.GET.get('checkout_date','')
-  bedrooms = request.GET.get('bedrooms','')
-  bathrooms = request.GET.get('bathrooms','')
-  guests = request.GET.get('guests','')
+  filtered_properties = PropertyFilter(properties, request.GET, user).apply_filters()
 
-  if host_id:
-    properties = properties.filter(host_id=host_id)
+  favorited = get_favorited_properties(filtered_properties, user)
 
-  if is_favorites:
-    properties = properties.filter(favorited__in=[user])
+  serializer = PropertiesListSerializer(filtered_properties, many=True)
 
-  if checkin_date and checkout_date:
-    exact_matches = (Reservation.objects.all().filter(checkin=checkin_date) |
-                     Reservation.objects.all().filter(checkout=checkout_date))
-
-    overlap_matches = Reservation.objects.all().filter(checkin__lte=checkout_date,checkout__gte=checkin_date)
-
-    all_matches = []
-    for reservation in exact_matches | overlap_matches:
-      all_matches.append(reservation.property_id)
-
-    properties = properties.exclude(id__in=all_matches)
-
-  if guests:
-    properties = properties.filter(guests__gte=guests)
-
-  if bedrooms:
-    properties = properties.filter(bedrooms__gte=bedrooms)
-
-  if bathrooms:
-    properties = properties.filter(bathrooms__gte=bathrooms)
-
-  if country:
-    properties = properties.filter(country=country)
-
-  if category and category != 'undefined':
-    properties = properties.filter(category__slug=category)
-  if user:
-    for property in properties:
-      if user in property.favorited.all():
-        favorited.append(property.id)
-
-  serializer = PropertiesListSerializer(properties,many=True)
   return JsonResponse({
-    'data':serializer.data,
-    'favorites':favorited
+    'data': serializer.data,
+    'favorites': favorited
   })
+
 
 @api_view(['GET'])
 @authentication_classes([])
@@ -121,6 +91,7 @@ def book_property(request, pk):
     guests = request.POST.get('guests','')
 
     property_to_reserve = Property.objects.get(pk=pk)
+
     Reservation.objects.create(
         property=property_to_reserve,
         checkin=checkin,
@@ -128,7 +99,8 @@ def book_property(request, pk):
         number_of_nights=number_of_nights,
         total_price=total_price,
         guests=guests,
-        created_by=request.user
+        created_by=request.user,
+        status=Reservation.Status.PENDING
     )
 
     return JsonResponse({"success":True})

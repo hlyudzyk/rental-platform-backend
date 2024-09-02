@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Confirmation</title>
+  <style>
+    .button {
+      font-size: 16px;
+      color: white;
+      background-color: #28a745;
+      padding: 15px 25px;
+      text-decoration: none;
+      border-radius: 5px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <p>Dear {{ user.name }},</p>
+  <p>Your booking for the property <strong>{{ property.name }}</strong> has been confirmed.</p>
+  <p>Check-in: {{ reservation.checkin }} <br> Check-out: {{ reservation.checkout }}</p>
+  <p>Total Price: {{ reservation.total_price }}</p>
+
+  <p>
+    <a href="{{ booking_url }}" class="button">View Your Booking</a>
+  </p>
+
+  <p>Thank you for choosing our service!</p>
+</body>
+</html>

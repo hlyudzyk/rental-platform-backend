@@ -47,6 +47,12 @@ class Property(models.Model):
 
 
 class Reservation(models.Model):
+  class Status(models.TextChoices):
+    PENDING = 'PENDING', 'Pending'
+    CONFIRMED = 'CONFIRMED', 'Confirmed'
+    COMPLETED = 'COMPLETED', 'Completed'
+    CANCELLED = 'CANCELLED', 'Cancelled'
+
   id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
   property = models.ForeignKey(Property,related_name='reservations',on_delete=models.CASCADE)
   checkin = models.DateField()
@@ -56,4 +62,5 @@ class Reservation(models.Model):
   total_price = models.FloatField()
   created_by = models.ForeignKey(User,related_name='reservations',on_delete=models.CASCADE)
   created_at = models.DateTimeField(auto_now_add=True)
-
+  status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+  feedback_email_sent = models.BooleanField(default=False)
