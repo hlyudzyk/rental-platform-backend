@@ -1,4 +1,5 @@
 djangobnb_backend/env
 djangobnb_backend/venv
 djangobnb_backend/media/uploads
-djangobnb_backend/.env.dev
+.env.dev
+dump.rdb

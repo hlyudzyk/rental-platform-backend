@@ -1,4 +1,3 @@
-
 from django.apps import AppConfig
 
 
@@ -8,4 +7,5 @@ class PropertyConfig(AppConfig):
 
     def ready(self):
         import property.signals
+
 
